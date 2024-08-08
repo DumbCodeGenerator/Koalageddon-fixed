@@ -2,6 +2,8 @@
 #include "util.h"
 #include "Logger.h"
 #include "constants.h"
+#include <fmt/core.h>
+#include <fmt/ostream.h> 
 
 bool contains(wstring haystack, wstring needle)
 {
@@ -50,7 +52,7 @@ wstring getProcessName(DWORD pid)
 	auto hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
 	if(hProcess == NULL)
 	{
-		logger->error("Failed to open handle to a process with id: {}. Error code: 0x{0:}", pid, GetLastError());
+		logger->error("Failed to open handle to a process with id: {}. Error code: 0x{:X}", pid, GetLastError());
 		return defaultName;
 	}
 
@@ -58,7 +60,7 @@ wstring getProcessName(DWORD pid)
 	auto result = GetModuleFileNameEx(hProcess, NULL, buffer, MAX_PATH);
 	if(result == NULL)
 	{
-		logger->error("Failed to get process name with id: {}s. Error code: 0x{0:}", pid, GetLastError());
+		logger->error("Failed to get process name with id: {}s. Error code: 0x{:X}", pid, GetLastError());
 		return defaultName;
 	}
 
@@ -128,10 +130,11 @@ path getPathFromRegistry(string value)
 	} catch(std::exception& e)
 	{
 		auto message = fmt::format(
-			"Failed to read the value of '{}' from the registry.\n"\
-			"You have to run the Integration Wizard to fix this issue.\n" \
-			"Exception message: {}", e.what()
+			"Failed to read the value of '{}' from the registry. Exception message: {}",
+			value, e.what()
 		);
+
+
 		showFatalError(message, true);
 		return "";
 	}

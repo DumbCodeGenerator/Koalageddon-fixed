@@ -1,4 +1,5 @@
-﻿#include "pch.h"
+﻿#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#include "pch.h"
 #include "Logger.h"
 #include "Config.h"
 #include "constants.h"
@@ -92,6 +93,7 @@ void askForAction(
 		{static_cast<int>(Action::REMOVE_INTEGRATIONS), L"&Remove platform integrations"}
 	};
 
+	
 	const auto wFooter = fmt::format(
 		LR"(📂 <a href="{0}">Open config directory</a>  ({0})
 
@@ -99,8 +101,8 @@ void askForAction(
 
 			💬 <a href="{2}">Open support forum topic</a>  ({2}))",
 		getConfigPath().parent_path().wstring(),
-		L"https://github.com/acidicoala/Koalageddon/releases/latest",
-		L"https://cs.rin.ru/forum/viewtopic.php?p=2333491#p2333491"
+		fmt::format(L"{}", latest_release_url),
+		fmt::format(L"{}", latest_support_forum_topic)
 	);
 
 	tdc.hInstance = hInstance;
@@ -135,13 +137,16 @@ void askForAction(
 	};
 
 	if (SUCCEEDED(TaskDialogIndirect(&tdc, reinterpret_cast<int*>(action), platformID, createShortcut))) {
-		//logger->debug("Clicked button: {}", *action);
+		// Convert Action enum to its integer representation or use a custom function to convert it to a string
+		logger->debug("Clicked button: {}", static_cast<int>(*action));
 
 		if (*action != Action::INSTALL_INTEGRATIONS && *action != Action::REMOVE_INTEGRATIONS)
 			*action = Action::NO_ACTION;
-	} else {
+	}
+	else {
 		*action = Action::UNEXPECTED_ERROR;
 	}
+
 }
 
 int APIENTRY wWinMain(

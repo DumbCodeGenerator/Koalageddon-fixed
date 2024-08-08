@@ -32,7 +32,8 @@ constexpr auto EA_DESKTOP = L"Qt5Core.dll"; // x86-64 only
 constexpr auto origin_entitlements_url = "https://raw.githubusercontent.com/KA4I/public-entitlements/main/origin/v1/entitlements.json";
 constexpr auto steamclient_patterns_url = "https://raw.githubusercontent.com/KA4I/public-entitlements/main/koalageddon/v1/steamclient-patterns.json";
 constexpr auto latest_release_url_api = "https://api.github.com/repos/KA4I/Koalageddon/releases/latest";
-constexpr auto latest_release_url = "https://github.com/KA4I/Koalageddon/releases/latest";
+constexpr auto latest_release_url = L"https://github.com/KA4I/Koalageddon/releases/latest";
+constexpr auto latest_support_forum_topic = L"https://cs.rin.ru/forum/viewtopic.php?p=2333491#p2333491";
 
 // Registry & paths
 constexpr auto KOALAGEDDON_KEY = R"(SOFTWARE\KA4I\Koalageddon)";

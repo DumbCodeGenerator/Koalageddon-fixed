@@ -45,9 +45,9 @@ void fetchEntitlements()
 		return;
 	}
 
-	if(r.status_code != 200)
+	if (r.status_code != 200)
 	{
-		//logger->error("Failed to fetch Origin entitlements: {} - {}", r.error.code, r.error.message);
+		logger->error("Failed to fetch Origin entitlements: {} - {}", static_cast<int>(r.error.code), r.error.message.c_str());
 		return;
 	}
 
@@ -185,33 +185,31 @@ bool modifyLangResponse(const string& data, const string& langRequestId, string*
 	return true;
 }
 
-bool modifyEntitlementReponse(const string& data, string* out)
+bool modifyEntitlementReponse(const std::string& data, std::string* out)
 {
 	XMLDocument xmlDoc;
-	if(xmlDoc.Parse(data.c_str()) != XMLError::XML_SUCCESS)
+	if (xmlDoc.Parse(data.c_str()) != XMLError::XML_SUCCESS)
 		return false;
 
 	auto pLSX = xmlDoc.FirstChildElement("LSX");
-	if(pLSX == nullptr)
+	if (pLSX == nullptr)
 		return false;
 
 	auto pResponse = pLSX->FirstChildElement("Response");
-	if(pResponse == nullptr)
+	if (pResponse == nullptr)
 		return false;
 
 	auto pQueryEntitlementsResponse = pResponse->FirstChildElement("QueryEntitlementsResponse");
-	if(pQueryEntitlementsResponse == nullptr)
+	if (pQueryEntitlementsResponse == nullptr)
 		return false;
 
 	logger->info("Intercepted QueryEntitlementsResponse");
 
-	// Origin / EA Desktop magic happens here
-
 	// First filter out blacklisted DLCs from the legit response
 	auto pEntitlement = pQueryEntitlementsResponse->FirstChildElement("Entitlement");
-	while(pEntitlement != nullptr)
+	while (pEntitlement != nullptr)
 	{
-		if(isOriginEntitlementBlacklisted(pEntitlement))
+		if (isOriginEntitlementBlacklisted(pEntitlement))
 			pQueryEntitlementsResponse->DeleteChild(pEntitlement);
 		pEntitlement = pEntitlement->NextSiblingElement("Entitlement");
 	}
@@ -219,11 +217,11 @@ bool modifyEntitlementReponse(const string& data, string* out)
 	// Insert our entitlements into the original response
 	auto inserted = 0;
 	pEntitlement = originEntitlementsXML.FirstChildElement("Entitlements")->FirstChildElement("Entitlement");
-	while(pEntitlement != nullptr)
+	while (pEntitlement != nullptr)
 	{
 		inserted++;
-		// Have to make a copy because TinyXML2 doesn't allow insertion of elements from another doc...
-		if(!isOriginEntitlementBlacklisted(pEntitlement))
+		// Make a copy because TinyXML2 doesn't allow insertion of elements from another doc
+		if (!isOriginEntitlementBlacklisted(pEntitlement))
 			pQueryEntitlementsResponse->InsertEndChild(pEntitlement->DeepClone(&xmlDoc));
 		pEntitlement = pEntitlement->NextSiblingElement("Entitlement");
 	}
@@ -231,9 +229,23 @@ bool modifyEntitlementReponse(const string& data, string* out)
 	XMLPrinter printer;
 	xmlDoc.Print(&printer);
 
+	// Extract information from the last entitlement (if needed)
+	std::string lastEntitlementInfo;
+	if (pEntitlement) {
+		// Assuming pEntitlement has a name attribute or some content to log
+		const char* name = pEntitlement->Attribute("name"); // Example attribute
+		if (name) {
+			lastEntitlementInfo = fmt::format("Name: {}", name);
+		}
+		else {
+			lastEntitlementInfo = "No name attribute found";
+		}
+	}
+
 	logger->debug("Modified response: \n{}", printer.CStr());
-	logger->info("Inserted {} entitlements: {}", inserted);
+	logger->info("Inserted {} entitlements. Last entitlement info: {}", inserted, lastEntitlementInfo);
 
 	*out = printer.CStr(); // copy constructor
 	return true;
 }
+

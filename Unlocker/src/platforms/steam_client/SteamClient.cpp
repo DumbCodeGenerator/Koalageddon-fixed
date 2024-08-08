@@ -13,12 +13,12 @@ bool SteamClient::fetchAndCachePatterns() const {
 
 	// Ensure that error code and message formatting is handled correctly
 	if (res.status_code != 200) {
-		//logger->error(
-		//	"Failed to fetch SteamClient patterns. ErrorCode: {}. StatusCode: {}. Message: {}",
-		//	res.error.code,        // Custom formatter handles this
-		//	res.status_code,       // Directly formattable
-		//	res.error.message      // Directly formattable
-		//);
+		logger->error(
+			"Failed to fetch SteamClient patterns. ErrorCode: {}. StatusCode: {}. Message: {}",
+			static_cast<int>(res.error.code),  // Convert to int for logging
+			res.status_code,                   // Directly formattable
+			res.error.message                  // Directly formattable
+		);
 		return false;
 	}
 

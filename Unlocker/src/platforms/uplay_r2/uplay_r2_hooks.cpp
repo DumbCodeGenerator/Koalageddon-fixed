@@ -66,45 +66,83 @@ int UPC_ProductListFree(void* context, ProductList* inProductList)
 
 void ProductListGetCallback(unsigned long arg1, void* data)
 {
-	logger->debug("{} -> arg1: {}, data: {}", arg1, data);
+    // Log arg1 and data as unsigned long and pointer (cast to uintptr_t for logging)
+    logger->debug("arg1: {}, data: {}", arg1, reinterpret_cast<uintptr_t>(data));
 
-	auto callbackContainer = (CallbackContainer*) data;
+    auto callbackContainer = (UPC::CallbackContainer*)data;
 
-	logger->debug("Legit product list:");
+    logger->debug("Legit product list:");
 
-	vector<Product*> missingProducts;
-	auto list = callbackContainer->legitProductList;
-	for(uint32_t i = 0; i < list->length; i++)
-	{
-		auto product = list->data[i];
+    vector<UPC::Product*> missingProducts;
+    auto list = callbackContainer->legitProductList;
+    for (uint32_t i = 0; i < list->length; i++)
+    {
+        auto product = list->data[i];
 
-		/*logger->debug(
-			"\tApp ID: {}, Type: {}, Mystery1: {}, Mystery2: {}, Always0: {}, Always3: {}",
-			product->appid, product->type, product->mystery1, product->mystery2, product->always_0, product->always_3
-		);*/
+        // Convert ProductType to string manually
+        std::string productTypeStr;
+        switch (product->type) {
+        case UPC::ProductType::App:
+            productTypeStr = "App";
+            break;
+        case UPC::ProductType::DLC:
+            productTypeStr = "DLC";
+            break;
+        case UPC::ProductType::Item:
+            productTypeStr = "Item";
+            break;
+        default:
+            productTypeStr = "Unknown";
+            break;
+        }
 
-		if(!(vectorContains(dlcs, product->appid) || vectorContains(items, product->appid)))
-			if(product->type != ProductType::App)
-				missingProducts.push_back(product);
-	}
+        // Log each product's details with the manual string conversion
+        logger->debug(
+            "\tApp ID: {}, Type: {}, Mystery1: {}, Mystery2: {}, Always0: {}, Always3: {}",
+            product->appid, productTypeStr, product->mystery1, product->mystery2, product->always_0, product->always_3
+        );
 
-	if(missingProducts.size() != 0)
-		logger->warn("Some of the legitimately owned products are missing from the config: ");
+        if (!(vectorContains(dlcs, product->appid) || vectorContains(items, product->appid)))
+            if (product->type != UPC::ProductType::App)
+                missingProducts.push_back(product);
+    }
 
-	for(const auto& missingProduct : missingProducts)
-	{
-		logger->warn("\tApp ID: {}, Type: {}", missingProduct->appid, productTypeToString(missingProduct->type));
-	}
+    if (!missingProducts.empty())
+        logger->warn("Some of the legitimately owned products are missing from the config: ");
 
-	// Free the legit product list
-	GET_ORIGINAL_FUNC(UPC_ProductListFree);
-	proxyFunc(callbackContainer->context, callbackContainer->legitProductList);
+    for (const auto& missingProduct : missingProducts)
+    {
+        // Log the product type string directly
+        std::string productTypeStr;
+        switch (missingProduct->type) {
+        case UPC::ProductType::App:
+            productTypeStr = "App";
+            break;
+        case UPC::ProductType::DLC:
+            productTypeStr = "DLC";
+            break;
+        case UPC::ProductType::Item:
+            productTypeStr = "Item";
+            break;
+        default:
+            productTypeStr = "Unknown";
+            break;
+        }
+        logger->warn("\tApp ID: {}, Type: {}", missingProduct->appid, productTypeStr);
+    }
 
-	callbackContainer->originalCallback(arg1, callbackContainer->callbackData);
-	logger->debug("Game callback was called");
+    // Free the legit product list
+    GET_ORIGINAL_FUNC(UPC_ProductListFree);
+    proxyFunc(callbackContainer->context, callbackContainer->legitProductList);
 
-	delete callbackContainer;
+    callbackContainer->originalCallback(arg1, callbackContainer->callbackData);
+    logger->debug("Game callback was called");
+
+    delete callbackContainer;
 }
+
+
+
 
 int UPC_ProductListGet(
 	void* context,

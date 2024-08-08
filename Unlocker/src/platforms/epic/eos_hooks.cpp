@@ -22,27 +22,30 @@ void EOS_CALL QueryOwnershipCallback(const EOS_Ecom_QueryOwnershipCallbackInfo* 
 {
 	auto data = const_cast<EOS_Ecom_QueryOwnershipCallbackInfo*>(Data);
 
-	//logger->debug("QueryOwnershipCallback -> ResultCode: {}", Data->ResultCode);
+	// Convert EOS_EResult to an integer for logging
+	logger->debug("QueryOwnershipCallback -> ResultCode: {}", static_cast<int>(Data->ResultCode));
+
 	logger->info("Responding with {} items", data->ItemOwnershipCount);
 
-	for(unsigned i = 0; i < data->ItemOwnershipCount; i++)
+	for (unsigned i = 0; i < data->ItemOwnershipCount; i++)
 	{
-		auto isBlacklisted = vectorContains(getEpicConfig().blacklist, string(data->ItemOwnership[i].Id));
+		auto isBlacklisted = vectorContains(getEpicConfig().blacklist, std::string(data->ItemOwnership[i].Id));
 
-		auto item = const_cast <EOS_Ecom_ItemOwnership*>(data->ItemOwnership + i);
+		auto item = const_cast<EOS_Ecom_ItemOwnership*>(data->ItemOwnership + i);
 		item->OwnershipStatus = isBlacklisted ? EOS_EOwnershipStatus::EOS_OS_NotOwned : EOS_EOwnershipStatus::EOS_OS_Owned;
 		logger->info("\t{} [{}]", item->Id, item->OwnershipStatus == EOS_EOwnershipStatus::EOS_OS_Owned ? "Owned" : "Not Owned");
 	}
 
-	auto container = (CallbackContainer*) data->ClientData;
+	auto container = (CallbackContainer*)data->ClientData;
 	data->ClientData = container->clientData;
-	logger->debug("QueryOwnershipCallback -> ClientData: {}, CompletionDelegate: {}", data->ClientData, (void*) container->originalCallback);
+	logger->debug("QueryOwnershipCallback -> ClientData: {}, CompletionDelegate: {}", data->ClientData, (void*)container->originalCallback);
 
 	container->originalCallback(data);
 	logger->debug("Original QueryOwnership callback called");
 
 	delete container;
 }
+
 
 void EOS_CALL EOS_Ecom_QueryOwnership(
 	EOS_HEcom Handle,
