@@ -7,7 +7,7 @@
 			"process": "steam.exe",
 			"replicate": false,
 			"unlock_dlc": true,
-			"unlock_shared_library": false,
+			"unlock_shared_library": true,
 			"app_blacklist": [
 				"976310" // Mortal Kombat 11
 			],
