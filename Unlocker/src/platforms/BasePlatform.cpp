@@ -79,11 +79,12 @@ void BasePlatform::installDetourHook(void* hookedFunc, const char* funcName, voi
 	uint64_t hookedFunc64 = reinterpret_cast<uint64_t>(hookedFunc);
 	uint64_t* trampoline64 = reinterpret_cast<uint64_t*>(&trampolineMap[funcName]);
 
-	hooks.push_back(make_unique<PLH::x64Detour>(
+	hooks.push_back(make_unique<Detour>(
 		funcAddress64,              // Target address
 		hookedFunc64,               // Detour function
 		trampoline64                // Trampoline pointer
 	));
+
 
 	if (hooks.back()->hook())
 	{
@@ -107,12 +108,10 @@ void BasePlatform::installDetourHook(void* hookedFunc, const char* funcName)
 		// Cast addresses to uint64_t
 		uint64_t originalFuncAddr64 = reinterpret_cast<uint64_t>(original_func_address);
 		uint64_t hookedFuncAddr64 = reinterpret_cast<uint64_t>(hookedFunc);
-
-		// Ensure trampolineMap is a map of std::string to uint64_t*
 		uint64_t* trampolineAddr64 = reinterpret_cast<uint64_t*>(&trampolineMap[funcName]);
 
 		// Add the detour to the hooks list
-		hooks.push_back(make_unique<PLH::x64Detour>(
+		hooks.push_back(make_unique<Detour>(
 			originalFuncAddr64,     // Target address
 			hookedFuncAddr64,       // Detour function address
 			trampolineAddr64        // Trampoline pointer
