@@ -11,10 +11,10 @@ void UpdateChecker::checkForUpdates()
 
 		if(r.status_code != 200)
 		{
-			logger->error(
+			/*logger->error(
 				"Failed to check for updates. ErrorCode: {}. StatusCode: {}. Message: {}",
 				r.error.code, r.status_code, r.error.message
-			);
+			);*/
 			return;
 		}
 

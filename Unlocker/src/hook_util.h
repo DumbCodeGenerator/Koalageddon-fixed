@@ -7,7 +7,7 @@ typedef PLH::x64Detour Detour;
 typedef PLH::x86Detour Detour;
 #endif
 
-extern PLH::CapstoneDisassembler disassembler;
+extern PLH::ZydisDisassembler disassembler;
 
 /**
  * By default, virtual functions are declared with __thiscall

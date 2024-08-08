@@ -22,7 +22,7 @@ void EOS_CALL QueryOwnershipCallback(const EOS_Ecom_QueryOwnershipCallbackInfo* 
 {
 	auto data = const_cast<EOS_Ecom_QueryOwnershipCallbackInfo*>(Data);
 
-	logger->debug("QueryOwnershipCallback -> ResultCode: {}", Data->ResultCode);
+	//logger->debug("QueryOwnershipCallback -> ResultCode: {}", Data->ResultCode);
 	logger->info("Responding with {} items", data->ItemOwnershipCount);
 
 	for(unsigned i = 0; i < data->ItemOwnershipCount; i++)

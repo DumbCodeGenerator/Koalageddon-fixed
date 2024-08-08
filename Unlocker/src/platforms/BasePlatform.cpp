@@ -74,11 +74,18 @@ void BasePlatform::installDetourHook(void* hookedFunc, const char* funcName, voi
 
 	auto& hooks = getPlatformHooks();
 
-	hooks.push_back(make_unique<Detour>
-		((char*) funcAddress, (char*) hookedFunc, &trampolineMap[funcName], disassembler)
-	);
+	// Cast function pointers and trampoline to uint64_t
+	uint64_t funcAddress64 = reinterpret_cast<uint64_t>(funcAddress);
+	uint64_t hookedFunc64 = reinterpret_cast<uint64_t>(hookedFunc);
+	uint64_t* trampoline64 = reinterpret_cast<uint64_t*>(&trampolineMap[funcName]);
 
-	if(hooks.back()->hook())
+	hooks.push_back(make_unique<PLH::x64Detour>(
+		funcAddress64,              // Target address
+		hookedFunc64,               // Detour function
+		trampoline64                // Trampoline pointer
+	));
+
+	if (hooks.back()->hook())
 	{
 		logger->info("Hooked '{}' via Detour.", funcName);
 	}
@@ -89,25 +96,38 @@ void BasePlatform::installDetourHook(void* hookedFunc, const char* funcName, voi
 	}
 }
 
+
 void BasePlatform::installDetourHook(void* hookedFunc, const char* funcName)
 {
 	auto& hooks = getPlatformHooks();
 
-	if(auto original_func_address = GetProcAddress(handle, funcName))
+	// Retrieve the original function address
+	if (auto original_func_address = GetProcAddress(handle, funcName))
 	{
-		hooks.push_back(make_unique<Detour>
-			((char*) original_func_address, (char*) hookedFunc, &trampolineMap[funcName], disassembler)
-		);
+		// Cast addresses to uint64_t
+		uint64_t originalFuncAddr64 = reinterpret_cast<uint64_t>(original_func_address);
+		uint64_t hookedFuncAddr64 = reinterpret_cast<uint64_t>(hookedFunc);
 
-		if(hooks.back()->hook())
+		// Ensure trampolineMap is a map of std::string to uint64_t*
+		uint64_t* trampolineAddr64 = reinterpret_cast<uint64_t*>(&trampolineMap[funcName]);
+
+		// Add the detour to the hooks list
+		hooks.push_back(make_unique<PLH::x64Detour>(
+			originalFuncAddr64,     // Target address
+			hookedFuncAddr64,       // Detour function address
+			trampolineAddr64        // Trampoline pointer
+		));
+
+		// Attempt to hook the function
+		if (hooks.back()->hook())
 		{
 			logger->info("Hooked '{}' via Detour.", funcName);
 		}
 		else
 		{
-			hooks.pop_back();
+			hooks.pop_back();  // Remove the failed detour
 			logger->warn("Failed to hook '{}' via Detour. Trying with IAT.", funcName);
-			installIatHook(hookedFunc, funcName);
+			installIatHook(hookedFunc, funcName);  // Fallback to IAT hooking
 		}
 	}
 	else
@@ -115,6 +135,7 @@ void BasePlatform::installDetourHook(void* hookedFunc, const char* funcName)
 		logger->error("Failed to find address of '{}' procedure", funcName);
 	}
 }
+
 
 void BasePlatform::installIatHook(void* hookedFunc, const char* funcName)
 {

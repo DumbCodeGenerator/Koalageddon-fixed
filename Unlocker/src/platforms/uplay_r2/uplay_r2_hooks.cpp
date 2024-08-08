@@ -78,10 +78,10 @@ void ProductListGetCallback(unsigned long arg1, void* data)
 	{
 		auto product = list->data[i];
 
-		logger->debug(
+		/*logger->debug(
 			"\tApp ID: {}, Type: {}, Mystery1: {}, Mystery2: {}, Always0: {}, Always3: {}",
 			product->appid, product->type, product->mystery1, product->mystery2, product->always_0, product->always_3
-		);
+		);*/
 
 		if(!(vectorContains(dlcs, product->appid) || vectorContains(items, product->appid)))
 			if(product->type != ProductType::App)

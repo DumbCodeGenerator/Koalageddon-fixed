@@ -268,7 +268,7 @@ BOOL WINAPI Hooked_CreateProcessW(
 
 	return result;
 }
-Detour detour((char*) &CreateProcessW, (char*) &Hooked_CreateProcessW, &createProcTrampoline, disassembler);
+Detour detour((uint64_t)&CreateProcessW, (uint64_t)&Hooked_CreateProcessW, &createProcTrampoline);
 
 void ProcessHooker::init()
 {

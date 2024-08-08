@@ -47,7 +47,7 @@ void fetchEntitlements()
 
 	if(r.status_code != 200)
 	{
-		logger->error("Failed to fetch Origin entitlements: {} - {}", r.error.code, r.error.message);
+		//logger->error("Failed to fetch Origin entitlements: {} - {}", r.error.code, r.error.message);
 		return;
 	}
 

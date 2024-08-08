@@ -4,17 +4,21 @@
 #include "constants.h"
 #include "PatternMatcher.h"
 
+
 bool SteamClient::fetchAndCachePatterns() const {
 	logger->debug("Fetching SteamClient patterns");
 
 	// Fetch offsets
 	const auto res = fetch(steamclient_patterns_url);
 
+	// Ensure that error code and message formatting is handled correctly
 	if (res.status_code != 200) {
-		logger->error(
-			"Failed to fetch SteamClient patterns. ErrorCode: {}. StatusCode: {}. Message: {}",
-			res.error.code, res.status_code, res.error.message
-		);
+		//logger->error(
+		//	"Failed to fetch SteamClient patterns. ErrorCode: {}. StatusCode: {}. Message: {}",
+		//	res.error.code,        // Custom formatter handles this
+		//	res.status_code,       // Directly formattable
+		//	res.error.message      // Directly formattable
+		//);
 		return false;
 	}
 
@@ -27,6 +31,7 @@ bool SteamClient::fetchAndCachePatterns() const {
 	logger->info("SteamClient patterns were successfully fetched and cached");
 	return true;
 }
+
 
 void SteamClient::readCachedPatterns() {
 	logger->debug("Reading SteamClient patterns from cache");

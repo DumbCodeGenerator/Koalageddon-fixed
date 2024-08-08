@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr auto VERSION = "1.5.4";
+constexpr auto VERSION = "1.6";
 
 constexpr auto INTEGRATION_64 = L"Integration64.dll";
 constexpr auto INTEGRATION_32 = L"Integration32.dll";
@@ -29,17 +29,17 @@ constexpr auto ORIGINCLIENT = L"OriginClient.dll"; // x86 only
 constexpr auto EA_DESKTOP = L"Qt5Core.dll"; // x86-64 only
 
 
-constexpr auto origin_entitlements_url = "https://raw.githubusercontent.com/acidicoala/public-entitlements/main/origin/v1/entitlements.json";
-constexpr auto steamclient_patterns_url = "https://raw.githubusercontent.com/acidicoala/public-entitlements/main/koalageddon/v1/steamclient-patterns.json";
-constexpr auto latest_release_url_api = "https://api.github.com/repos/acidicoala/Koalageddon/releases/latest";
-constexpr auto latest_release_url = "https://github.com/acidicoala/Koalageddon/releases/latest";
+constexpr auto origin_entitlements_url = "https://raw.githubusercontent.com/KA4I/public-entitlements/main/origin/v1/entitlements.json";
+constexpr auto steamclient_patterns_url = "https://raw.githubusercontent.com/KA4I/public-entitlements/main/koalageddon/v1/steamclient-patterns.json";
+constexpr auto latest_release_url_api = "https://api.github.com/repos/KA4I/Koalageddon/releases/latest";
+constexpr auto latest_release_url = "https://github.com/KA4I/Koalageddon/releases/latest";
 
 // Registry & paths
-constexpr auto KOALAGEDDON_KEY = R"(SOFTWARE\acidicoala\Koalageddon)";
+constexpr auto KOALAGEDDON_KEY = R"(SOFTWARE\KA4I\Koalageddon)";
 constexpr auto WORKING_DIR = "WORKING_DIR";
 constexpr auto INSTALL_DIR = "INSTALL_DIR";
 constexpr auto CONFIG_NAME = "Config.jsonc";
-constexpr auto ACIDICOALA = "acidicoala";
+constexpr auto ACIDICOALA = "KA4I";
 constexpr auto KOALAGEDDON = "Koalageddon";
 
 // Platform info

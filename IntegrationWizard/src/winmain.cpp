@@ -135,7 +135,7 @@ void askForAction(
 	};
 
 	if (SUCCEEDED(TaskDialogIndirect(&tdc, reinterpret_cast<int*>(action), platformID, createShortcut))) {
-		logger->debug("Clicked button: {}", *action);
+		//logger->debug("Clicked button: {}", *action);
 
 		if (*action != Action::INSTALL_INTEGRATIONS && *action != Action::REMOVE_INTEGRATIONS)
 			*action = Action::NO_ACTION;
