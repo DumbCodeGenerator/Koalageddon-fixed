@@ -20,7 +20,7 @@ InterfaceMap ordinalMap = {
 		{"GetDLCCount", 10}, // [004 - 008]. Missing in [001 - 003]
 		{"BGetDLCDataByIndex", 11} // [004 - 008]. Missing in [001 - 003]
 	}},
-	{STEAM_CLIENT, { // TODO: Patche the ordinal dynamically?
+	{STEAM_CLIENT, { // TODO: Patch the ordinal dynamically?
 		/*
 		001: N/A.
 		...

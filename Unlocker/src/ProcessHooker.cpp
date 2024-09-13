@@ -23,7 +23,7 @@ void inject(std::wstring wPID, uint64_t funcAddr)
 {
 	DWORD PID = std::stoi(wPID);
 
-	// Determine the target executable's architecture to launch correponding injector
+	// Determine the target executable's architecture to launch corresponding injector
 	bool is32 = is32bit(PID);
 
 	auto installDir = getInstallDirPath();
