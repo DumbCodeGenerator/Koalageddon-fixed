@@ -1,3 +1,8 @@
+# Purpose of this fork
+I created this fork to make Koalageddon work for the new Steam Families system. Credits to GreenLuma
+
+Next is information from the original repo
+
 # 🐨 Koalageddon 💥
 <font size="3">**Legit DLC Unlocker for Steam, Epic, Origin, EA Desktop & Uplay (R1)**</font> 
 
