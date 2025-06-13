@@ -90,8 +90,9 @@ void SteamClient::installHooks() {
 	// We first try to hook Family Sharing functions,
 	// since it is critical to hook them before they are called
 	if (config->platformRefs.Steam.unlock_shared_library) {
-		HOOK(SharedLibraryLockStatus);
+		//HOOK(SharedLibraryLockStatus);
 		HOOK(SharedLibraryStopPlaying);
+		HOOK(FamilyGroupRunningApp);
 	}
 	if (config->platformRefs.Steam.unlock_dlc && !config->platformRefs.Steam.replicate) {
 		HOOK(IsAppDLCEnabled);

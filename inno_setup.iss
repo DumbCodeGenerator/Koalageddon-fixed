@@ -3,8 +3,8 @@
 
 #define MyAppName "Koalageddon"
 #define MyAppVersion "1.6"
-#define MyAppPublisher "KA4I"
-#define MyAppURL "https://github.com/KA4I/Koalageddon"
+#define MyAppPublisher "DumbCodeGenerator"
+#define MyAppURL "https://github.com/DumbCodeGenerator/Koalageddon-fixed"
 #define MyAppExeName "IntegrationWizard64.exe"
 #define MyOutputFileName "KoalageddonInstaller"
 

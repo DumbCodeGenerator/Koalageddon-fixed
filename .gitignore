@@ -1,3 +1,6 @@
 .vs
 _Build
 *.vcxproj.user
+vcpkg_installed
+vcpkg.json
+vcpkg-configuration.json
