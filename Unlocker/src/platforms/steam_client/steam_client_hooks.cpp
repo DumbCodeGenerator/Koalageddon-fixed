@@ -76,20 +76,14 @@ HOOK_SPEC(bool) GetDLCDataByIndex(PARAMS(int appID, int index, int* pDlcID, bool
 
 /// Family Sharing hooks
 
-/*HOOK_SPEC(bool) SharedLibraryLockStatus(PARAMS(void* mysteryInterface))
-{
-	logger->debug("SharedLibraryLockStatus: {}", mysteryInterface);
-	return true;
-}*/
-
 HOOK_SPEC(bool) SharedLibraryStopPlaying(PARAMS(void* mysteryInterface))
 {
 	logger->debug("SharedLibraryStopPlaying: {}", mysteryInterface);
 	return true;
 }
 
-HOOK_SPEC(unsigned int) FamilyGroupRunningApp(PARAMS(void* mysteryInterface))
+HOOK_SPEC(bool) FamilyGroupRunningApp(PARAMS(void* mysteryInterface))
 {
 	logger->debug("FamilyGroupRunningApp: {}", mysteryInterface);
-	return 0xFFFFFFFF;
+	return true;
 }
