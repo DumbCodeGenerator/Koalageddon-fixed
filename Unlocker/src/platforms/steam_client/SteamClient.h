@@ -4,7 +4,7 @@
 class SteamClient : public BasePlatform
 {
 protected:
-	const path PATTERNS_FILE_PATH = getCacheDirPath() / "steamclient-patterns.json";
+	inline static const path PATTERNS_FILE_PATH = getCacheDirPath() / "steamclient-patterns.json";
 	
 	map<string, string> patterns;
 

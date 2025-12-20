@@ -36,6 +36,8 @@ bool SteamClient::fetchAndCachePatterns() const {
 void SteamClient::readCachedPatterns() {
 	logger->debug("Reading SteamClient patterns from cache");
 
+	patterns.clear();
+
 	auto text = readFileContents(PATTERNS_FILE_PATH);
 
 	if (text.empty()) {
@@ -46,7 +48,8 @@ void SteamClient::readCachedPatterns() {
 	try {
 		// Parse json into our vector
 		json::parse(text, nullptr, true, true).get_to(patterns);
-	} catch (json::exception& ex) {
+	}
+	catch (json::exception& ex) {
 		logger->error(L"Error parsing {}: {}", PATTERNS_FILE_PATH.wstring(), stow(ex.what()));
 		return;
 	}
@@ -81,11 +84,9 @@ void SteamClient::installHook(void* hookedFunc, const string funcName) {
 }
 
 void SteamClient::installHooks() {
-	logger->info("steamclient.dll version: {}", getModuleVersion("steamclient.dll"));
+	logger->info("steamclient64.dll version: {}", getModuleVersion("steamclient64.dll"));
 
 #define HOOK(FUNC) installHook(FUNC, #FUNC)  // NOLINT(cppcoreguidelines-macro-usage)
-
-#ifndef _WIN64 // Suppress the pointer size warnings on x64
 
 	// We first try to hook Family Sharing functions,
 	// since it is critical to hook them before they are called
@@ -98,49 +99,29 @@ void SteamClient::installHooks() {
 		HOOK(IsSubscribedApp);
 		HOOK(GetDLCDataByIndex);
 	}
-
-#endif
 }
 
 void SteamClient::platformInit() {
-#ifndef _WIN64 // No point in x86-64 since Steam.exe is x86.
 	logger->debug("Current process: {}, Steam process: {}", getCurrentProcessName(), config->platformRefs.Steam.process);
 	if (!stringsAreEqual(getCurrentProcessName(), config->platformRefs.Steam.process, true)) {
 		logger->debug("Ignoring hooks since this is not a Steam process");
 		return;
 	}
 
-	// Execute blocking operations in a new thread
-	std::thread hooksThread([&] {
-		std::thread fetchingThread([&] {
-			if (fetchAndCachePatterns()) {
-				readCachedPatterns();
-			}
-		});
-		readCachedPatterns();
+	fetchAndCachePatterns();
+	readCachedPatterns();
 
-		if (patterns.empty()) {
-			// No cached patterns, hence we fetch them synchronously
-			fetchingThread.join();
-		} else {
-			// Patterns were cached, hence we fetch them asynchronously
-			fetchingThread.detach();
-		}
-
-		if (!patterns.empty()) {
-			installHooks();
-		} else {
-			showFatalError(
-				"Failed to initialize Steam platform since steamclient-patterns.json "
-				"was not found in cache directory and could not be fetched from online source.",
-				false,
-				false
-			);
-		}
-	});
-	hooksThread.detach();
-
-#endif
+	if (!patterns.empty()) {
+		installHooks();
+	}
+	else {
+		showFatalError(
+			"Failed to initialize Steam platform since steamclient-patterns.json "
+			"was not found in cache directory and could not be fetched from online source.",
+			false,
+			false
+		);
+	}
 }
 
 string SteamClient::getPlatformName() {

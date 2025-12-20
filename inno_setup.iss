@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Koalageddon"
-#define MyAppVersion "1.6"
+#define MyAppVersion "1.6.1"
 #define MyAppPublisher "DumbCodeGenerator"
 #define MyAppURL "https://github.com/DumbCodeGenerator/Koalageddon-fixed"
 #define MyAppExeName "IntegrationWizard64.exe"

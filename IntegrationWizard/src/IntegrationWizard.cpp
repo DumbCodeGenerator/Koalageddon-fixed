@@ -33,7 +33,7 @@ void showPostActionReport(const Action action)
 	}
 }
 
-void installIntegration(const PlatformInstallation& platform)
+void installIntegration(PlatformInstallation& platform)
 {
 	const auto integrationDLL = platform.architecture == Architecture::x32 ? INTEGRATION_32 : INTEGRATION_64;
 	const auto integrationDllPath = getInstallDirPath() / integrationDLL;
@@ -47,6 +47,7 @@ void installIntegration(const PlatformInstallation& platform)
 	killProcess(platform.process);
 
 	copy_file(integrationDllPath, versionDLLPath, copy_options::overwrite_existing);
+	platform.installed = true;
 
 	// TODO: This code is temporary.
 	// It is meant to clean-up integration artifacts from previous versions.
@@ -55,7 +56,7 @@ void installIntegration(const PlatformInstallation& platform)
 	DeleteFile(originalDLLPath.c_str());
 }
 
-void removeIntegration(const PlatformInstallation& platform)
+void removeIntegration(PlatformInstallation& platform)
 {
 	const auto versionDLLPath = platform.path / "version.dll";
 	logger->debug("Version DLL path: '{}'",versionDLLPath.string());
@@ -64,10 +65,11 @@ void removeIntegration(const PlatformInstallation& platform)
 	killProcess(platform.process);
 
 	DeleteFile(versionDLLPath.c_str());
+	platform.installed = false;
 }
 
 
-void safelyAlterPlatform(Action action, const PlatformInstallation& platform)
+void safelyAlterPlatform(Action action, PlatformInstallation& platform)
 {
 	const auto actionString = action == Action::INSTALL_INTEGRATIONS ? "install" : "remove";
 	const auto actioningString = action == Action::INSTALL_INTEGRATIONS ? "Installing" : "Removing";
@@ -99,7 +101,7 @@ void IntegrationWizard::alterPlatform(Action action, int platformID, map<int, Pl
 
 	if(platformID == IntegrationWizard::ALL_PLATFORMS)
 	{
-		for(const auto& [key, platform] : platforms)
+		for(auto& [key, platform] : platforms)
 		{
 			safelyAlterPlatform(action, platform);
 		}
@@ -118,7 +120,7 @@ map<string, PlatformRegistry> platformRegMap = {
 	{EPIC_GAMES_32_NAME,PlatformRegistry{ Architecture::x32, EPIC_GAMES_PROCESS,EPIC_GAMES_KEY,	EPIC_GAMES_VALUE}},
 	{EPIC_GAMES_64_NAME,PlatformRegistry{ Architecture::x64, EPIC_GAMES_PROCESS,EPIC_GAMES_KEY,	EPIC_GAMES_VALUE}},
 	{ORIGIN_NAME,		PlatformRegistry{ Architecture::x32, ORIGIN_PROCESS,	ORIGIN_KEY,		ORIGIN_VALUE	}},
-	{STEAM_NAME,		PlatformRegistry{ Architecture::x32, STEAM_PROCESS,		STEAM_KEY,		STEAM_VALUE		}},
+	{STEAM_NAME,		PlatformRegistry{ Architecture::x64, STEAM_PROCESS,		STEAM_KEY,		STEAM_VALUE		}},
 	{UBISOFT_NAME,		PlatformRegistry{ Architecture::x32, UBISOFT_PROCESS,	UBISOFT_KEY,	UBISOFT_VALUE	}},
 };
 
@@ -143,8 +145,11 @@ map<int, PlatformInstallation> IntegrationWizard::getInstalledPlatforms()
 			else if(name == ORIGIN_NAME || name==EA_DESKTOP_NAME) // Origin & EA Desktop store path to exe
 				platformPath = platformPath.parent_path();
 
-			if(std::filesystem::exists(platformPath))
-				installedPlatforms[platformID++] = PlatformInstallation{ platformPath, architecture, process, stow(name) };
+			if (std::filesystem::exists(platformPath)) {
+				const auto versionDLLPath = platformPath / "version.dll";
+				const auto isInstalled = std::filesystem::exists(versionDLLPath);
+				installedPlatforms[platformID++] = PlatformInstallation{ platformPath, architecture, process, stow(name), isInstalled };
+			}
 		} catch(winreg::RegException& e)
 		{ // This is normal if platform is not installed
 			logger->warn(

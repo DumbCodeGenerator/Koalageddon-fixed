@@ -64,8 +64,7 @@ void askForAction(
 	const HINSTANCE hInstance,
 	map<int, IntegrationWizard::PlatformInstallation>& platforms,
 	Action* action,
-	int* platformID,
-	BOOL* createShortcut
+	int* platformID
 ) {
 	TASKDIALOGCONFIG tdc = {};
 	tdc.cbSize = sizeof(TASKDIALOGCONFIG);
@@ -78,14 +77,20 @@ void askForAction(
 		L"During installation/removal platform processes will be terminated, "
 		L"so make sure to close all games and save all data.";
 
+	std::vector<std::wstring> buttonNames;
 	vector<TASKDIALOG_BUTTON> radioButtons;
+	auto defaultButton = IntegrationWizard::ALL_PLATFORMS;
 	radioButtons.reserve(platforms.size() + 1);
 	for (const auto& [key, platform] : platforms) {
-		radioButtons.push_back(TASKDIALOG_BUTTON{key, platform.name.c_str()});
+		if (platform.name == stow(STEAM_NAME))
+			defaultButton = key;
+		std::wstring buttonText = platform.name + (platform.installed ? L" [+]" : L" [-]");
+		buttonNames.push_back(std::move(buttonText));
+		radioButtons.push_back(TASKDIALOG_BUTTON{ key, buttonNames.back().c_str() });
 	}
 
 	if (radioButtons.size() > 1) {
-		radioButtons.push_back(TASKDIALOG_BUTTON{IntegrationWizard::ALL_PLATFORMS, L"All of the above"});
+		radioButtons.push_back(TASKDIALOG_BUTTON{ IntegrationWizard::ALL_PLATFORMS, L"All of the above" });
 	}
 
 	TASKDIALOG_BUTTON aCustomButtons[] = {
@@ -93,7 +98,7 @@ void askForAction(
 		{static_cast<int>(Action::REMOVE_INTEGRATIONS), L"&Remove platform integrations"}
 	};
 
-	
+
 	const auto wFooter = fmt::format(
 		LR"(📂 <a href="{0}">Open config directory</a>  ({0})
 
@@ -113,7 +118,7 @@ void askForAction(
 	tdc.pszMainIcon = TD_INFORMATION_ICON;
 	tdc.pszMainInstruction = szHeader;
 	tdc.cRadioButtons = radioButtons.size();
-	tdc.nDefaultRadioButton = IntegrationWizard::ALL_PLATFORMS;
+	tdc.nDefaultRadioButton = defaultButton;
 	tdc.pRadioButtons = radioButtons.data();
 	tdc.pszContent = szBodyText;
 	tdc.pszExpandedInformation = szExpandedInformation;
@@ -134,9 +139,9 @@ void askForAction(
 		}
 
 		return S_OK;
-	};
+		};
 
-	if (SUCCEEDED(TaskDialogIndirect(&tdc, reinterpret_cast<int*>(action), platformID, createShortcut))) {
+	if (SUCCEEDED(TaskDialogIndirect(&tdc, reinterpret_cast<int*>(action), platformID, FALSE))) {
 		// Convert Action enum to its integer representation or use a custom function to convert it to a string
 		logger->debug("Clicked button: {}", static_cast<int>(*action));
 
@@ -171,35 +176,27 @@ int APIENTRY wWinMain(
 
 	Action action;
 	int platformID = -1;
-	BOOL shouldCreateShortcut = FALSE;
 
 	if (platforms.empty())
 		action = Action::NOTHING_TO_INSTALL;
 	else
-		askForAction(hInstance, platforms, &action, &platformID, &shouldCreateShortcut);
+		askForAction(hInstance, platforms, &action, &platformID);
 
 	switch (action) {
-		case Action::UNEXPECTED_ERROR:
-			logger->error("Unexpected action result. Error code: 0x{:X}", GetLastError());
-			break;
-		case Action::NO_ACTION:
-			logger->info("No action was taken. Terminating.");
-			break;
-		case Action::INSTALL_INTEGRATIONS:
-			[[fallthrough]];
-		case Action::REMOVE_INTEGRATIONS:
-			alterPlatform(action, platformID, platforms);
-			if (shouldCreateShortcut) {
-				createShortcut(
-					getConfigPath().wstring(),
-					(getDesktopPath() / "Config.lnk").wstring(),
-					L"Koalageddon Configuration File"
-				);
-			}
-			break;
-		case Action::NOTHING_TO_INSTALL:
-			MessageBox(nullptr, L"Koalageddon did not find any installed platforms.", L"Nothing found", MB_ICONINFORMATION);
-			break;
+	case Action::UNEXPECTED_ERROR:
+		logger->error("Unexpected action result. Error code: 0x{:X}", GetLastError());
+		break;
+	case Action::NO_ACTION:
+		logger->info("No action was taken. Terminating.");
+		break;
+	case Action::INSTALL_INTEGRATIONS:
+		[[fallthrough]];
+	case Action::REMOVE_INTEGRATIONS:
+		alterPlatform(action, platformID, platforms);
+		break;
+	case Action::NOTHING_TO_INSTALL:
+		MessageBox(nullptr, L"Koalageddon did not find any installed platforms.", L"Nothing found", MB_ICONINFORMATION);
+		break;
 	}
 
 	return 0;

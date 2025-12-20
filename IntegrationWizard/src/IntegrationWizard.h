@@ -25,6 +25,7 @@ struct PlatformInstallation
 	Architecture architecture = Architecture::x32;
 	string process;
 	wstring name;
+	bool installed;
 };
 
 struct PlatformRegistry
